@@ -1,16 +1,38 @@
-# This is a sample Python script.
+import pandas as pd
+import numpy as np
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+dataFrame = pd.read_csv("ubisoft.csv")
+samples_arr = dataFrame["Zamkniecie"]
+samples = samples_arr.to_numpy()
+macd: list[float] = []
 
+def eman_calc (samples,n:int,index):
+    sum_nom:float = 0
+    sum_denom:float = 0
+    alpha:float = 2/(n+1)
+    for x in range(n):
+        sum_nom += ((1-alpha)**x)*samples[index-x]
+        sum_denom += (1-alpha)**x
+    return sum_nom/sum_denom
+
+def macd_calc (samples,index):
+    ema12 = eman_calc(samples,12,index)
+    ema26 = eman_calc(samples,26,index)
+    return ema12-ema26
+
+
+# for sample in samples[25:]:
+#      macd.append(macd_calc(samples))
+
+for index, sample in enumerate(samples[25:], start=25):
+    macd.append(macd_calc(samples,index))
+
+for e in macd:
+    print(e)
 
 def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+
+    print(f'{name}')
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
