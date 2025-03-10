@@ -4,12 +4,12 @@ import numpy as np
 dataFrame = pd.read_csv("ubisoft.csv")
 samples_arr = dataFrame["Zamkniecie"]
 samples = samples_arr.to_numpy()
-macd: list[float] = []
+macd = []
 
-def eman_calc (samples,n:int,index):
-    sum_nom:float = 0
-    sum_denom:float = 0
-    alpha:float = 2/(n+1)
+def eman_calc (samples,n,index):
+    sum_nom = 0
+    sum_denom = 0
+    alpha = 2/(n+1)
     for x in range(n):
         sum_nom += ((1-alpha)**x)*samples[index-x]
         sum_denom += (1-alpha)**x
