@@ -1,38 +1,65 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 dataFrame = pd.read_csv("ubisoft.csv")
 samples_arr = dataFrame["Zamkniecie"]
 samples = samples_arr.to_numpy()
-macd = []
 
-def eman_calc (samples,n,index):
-    sum_nom = 0
-    sum_denom = 0
-    alpha = 2/(n+1)
-    for x in range(n):
-        sum_nom += ((1-alpha)**x)*samples[index-x]
-        sum_denom += (1-alpha)**x
-    return sum_nom/sum_denom
 
-def macd_calc (samples,index):
-    ema12 = eman_calc(samples,12,index)
-    ema26 = eman_calc(samples,26,index)
+def calculate_eman(prices, period):
+    alpha = 2 / (period + 1)
+    ema = np.zeros_like(prices)
+    ema[0] = prices[0]
+    for i in range(1, len(prices)):
+        ema[i] = alpha * prices[i] + (1 - alpha) * ema[i - 1]
+    return ema
+
+def macd_calc (samples):
+    ema12 = calculate_eman(samples,12)
+    ema26 = calculate_eman(samples,26)
     return ema12-ema26
 
 
-# for sample in samples[25:]:
-#      macd.append(macd_calc(samples))
+macd = macd_calc(samples)
+signal = calculate_eman(macd,9)
+buy_signals = []
+sell_signals = []
 
-for index, sample in enumerate(samples[25:], start=25):
-    macd.append(macd_calc(samples,index))
+for i in range(1, len(macd)):
 
-for e in macd:
-    print(e)
+    if macd[i - 1] < signal[i - 1] and macd[i] > signal[i]:
+        buy_signals.append(i)
+    elif macd[i - 1] > signal[i - 1] and macd[i] < signal[i]:
+        sell_signals.append(i)
 
-def print_hi(name):
 
-    print(f'{name}')
+
+
+plt.figure(figsize=(12, 6))
+plt.plot(samples, label="Cena zamknięcia", color="blue")
+plt.legend()
+plt.title("Notowania Ubisoft - Cena Zamknięcia w Czasie")
+plt.xlabel("Dzień")
+plt.ylabel("Cena zamknięcia (EUR)")
+plt.show()
+
+
+plt.figure(figsize=(12, 6))
+plt.plot(macd, label="MACD", color="blue", linestyle="-")
+plt.plot(signal, label="SIGNAL", color="red", linestyle="-")
+
+
+plt.scatter(buy_signals, macd[buy_signals], color="green", marker="^", label="Sygnał Kupna", s=50)
+plt.scatter(sell_signals, macd[sell_signals], color="red", marker="v", label="Sygnał Sprzedaży", s=50)
+
+
+plt.legend()
+plt.title("Wskaźnik MACD Ubisoft - Analiza Trendów")
+plt.xlabel("Dzień")
+plt.ylabel("Wartość MACD")
+plt.show()
+
 
 
 
