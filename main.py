@@ -187,4 +187,59 @@ plt.xlabel("Dzień")
 plt.ylabel("Wartość akcji (JPY)")
 plt.show()
 
+#symulacja
+transactions = []
+budget = 1000
+holding = False
+shares = 0
+portfolio_values = []
+
+i = 0
+while i < len(buy_signals):
+    buy_day = buy_signals[i]
+    buy_price = samples[buy_day]
+
+
+    if budget > 0:
+        shares = budget / buy_price
+        budget = 0
+        holding = True
+
+
+    sell_day = next((s for s in sell_signals if s > buy_day), None)
+
+    if sell_day is not None and holding:
+        sell_price = samples[sell_day]
+        budget = shares * sell_price
+        profit = ((sell_price - buy_price) / buy_price) * 100
+        transactions.append((buy_day, sell_day, buy_price, sell_price, profit, budget))
+        holding = False
+        shares = 0
+
+    portfolio_values.append(budget if not holding else shares * samples[buy_day])
+    i += 1
+
+for t in transactions:
+    print(
+        f"Transakcja: Kupno {t[0]} po {t[2]:.2f}, sprzedaż {t[1]} po {t[3]:.2f}, zysk: {t[4]:.2f}%, budżet po transakcji: {t[5]:.2f}")
+
+print(f"Końcowy budżet: {t[5]:.2f}")
+
+
+profit_trades = sum(1 for t in transactions if t[4] > 0)
+loss_trades = len(transactions) - profit_trades
+success_rate = (profit_trades / len(transactions)) * 100 if transactions else 0
+
+print(f"Liczba zyskownych transakcji: {profit_trades}")
+print(f"Liczba stratnych transakcji: {loss_trades}")
+print(f"Skuteczność strategii: {success_rate:.2f}%")
+
+plt.figure(figsize=(12, 6))
+plt.plot(portfolio_values, label='Wartość portfela')
+plt.xlabel('Liczba transakcji')
+plt.ylabel('Wartość portfela')
+plt.title('Zmiana wartości portfela inwestycyjnego')
+plt.legend()
+plt.show()
+
 
